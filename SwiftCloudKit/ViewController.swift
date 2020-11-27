@@ -64,7 +64,7 @@ class ViewController: UIViewController {
 
 struct BannerRecord: RecordModel{
 
-    var ckRecord: CKRecord
+    var useRecord: CKRecord
     
     enum FieldKey : String {
         case clickType
@@ -76,7 +76,7 @@ struct BannerRecord: RecordModel{
     static var recordType = "BannerRecord"
     
     init(record: CKRecord) {
-        ckRecord = record
+        useRecord = record
     }
     
     var clickType: Int? {

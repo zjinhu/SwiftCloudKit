@@ -6,21 +6,22 @@ public protocol RecordModel{
     
     static var recordType: String { get }
     
-    var ckRecord: CKRecord { get set }
+    var useRecord: CKRecord { get }
     
     init(record: CKRecord)
     
     associatedtype FieldKey : RawRepresentable
+
 }
 
 public extension RecordModel where FieldKey.RawValue == String {
-    
+
     func getField<T>(_ key: FieldKey) -> T? {
-        return ckRecord[key.rawValue] as? T
+        return useRecord[key.rawValue] as? T
     }
     
     func setField<T>(_ key: FieldKey, value: T?) {
-        return ckRecord[key.rawValue] = value as? CKRecordValue
+        return useRecord[key.rawValue] = value as? CKRecordValue
     }
     
     
@@ -178,7 +179,7 @@ public extension SwiftCloudKit {
         
         let database = getDatabase(config.type, identifier: config.identifier)
         
-        let record = object.ckRecord
+        let record = object.useRecord
         
         database.save(record) { (savedRecord, error) in
             guard let savedRecord = savedRecord else {
@@ -205,7 +206,7 @@ public extension SwiftCloudKit {
                                        completion: @escaping (Result<T, Error>) -> Void){
         
         let database = getDatabase(config.type, identifier: config.identifier)
-        let modifyOperation = CKModifyRecordsOperation(recordsToSave: [object.ckRecord], recordIDsToDelete: nil)
+        let modifyOperation = CKModifyRecordsOperation(recordsToSave: [object.useRecord], recordIDsToDelete: nil)
         modifyOperation.savePolicy = config.policy
         modifyOperation.qualityOfService = QualityOfService.userInitiated
         modifyOperation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, operationError in
@@ -236,7 +237,7 @@ public extension SwiftCloudKit {
                                        config: CloudConfig,
                                        completion: @escaping (Bool) -> Void) {
         
-        let ID = object.ckRecord.recordID
+        let ID = object.useRecord.recordID
         let database = getDatabase(config.type, identifier: config.identifier)
         database.delete(withRecordID: ID) { (id, error) in
             guard let _ = id else {
@@ -394,7 +395,7 @@ public extension SwiftCloudKit {
         let database = getDatabase(config.type, identifier: config.identifier)
         var recordArray = [CKRecord]()
         objects.forEach { (obj) in
-            recordArray.append(obj.ckRecord)
+            recordArray.append(obj.useRecord)
         }
         
         let modifyOperation = CKModifyRecordsOperation(recordsToSave: recordArray, recordIDsToDelete: nil)
