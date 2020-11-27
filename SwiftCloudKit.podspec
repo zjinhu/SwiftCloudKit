@@ -2,7 +2,7 @@
 Pod::Spec.new do |s|
 
   s.name         = "SwiftCloudKit"
-  s.version      = "0.8.0"
+  s.version      = "0.1.0"
   s.summary      = "A short description of SwiftCloudKit."
 
   s.homepage         = 'https://github.com/jackiehu/SwiftCloudKit'

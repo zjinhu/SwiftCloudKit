@@ -1,22 +1,60 @@
 import Foundation
 import CloudKit
+import UIKit
+
+public protocol RecordModel{
+    
+    static var recordType: String { get }
+    
+    var ckRecord: CKRecord { get set }
+    
+    init(record: CKRecord)
+    
+    associatedtype FieldKey : RawRepresentable
+}
+
+public extension RecordModel where FieldKey.RawValue == String {
+    
+    func getField<T>(_ key: FieldKey) -> T? {
+        return ckRecord[key.rawValue] as? T
+    }
+    
+    func setField<T>(_ key: FieldKey, value: T?) {
+        return ckRecord[key.rawValue] = value as? CKRecordValue
+    }
+    
+    
+    func getReference(_ key: FieldKey) -> String? {
+        let ref: CKRecord.Reference? = getField(key)
+        return ref?.recordID.recordName
+    }
+    
+    func setReference(_ key: FieldKey, referenceIdentifier: String?) {
+        let ref = referenceIdentifier.flatMap { (id: String) -> CKRecord.Reference in
+            let rid = CKRecord.ID(recordName: id)
+            return CKRecord.Reference(recordID: rid, action: .deleteSelf)
+        }
+        setField(key, value: ref)
+    }
+    
+    
+    func getAsset(_ key: FieldKey) -> UIImage? {
+        let ref: CKAsset? = getField(key)
+        return try? ref?.imageAsset()
+    }
+    
+    func setAsset(_ key: FieldKey, image: UIImage?) {
+        guard let im = image, let asset = try? im.saveToTempLocation(withFileType: .PNG) else {
+            return
+        }
+        setField(key, value: asset)
+    }
+}
 
 public enum DatabaseType {
     case privateDB
     case publicDB
     case sharedDB
-}
-
-public protocol CloudObject: class{
-    
-    var recordID: (CKRecord.ID)? { get set }
-    
-    static var recordType: String { get }
-    
-    init(record: CKRecord)
-    
-    func toRecord() -> CKRecord
-    
 }
 
 public struct CloudConfig {
@@ -127,31 +165,20 @@ public struct SwiftCloudKit {
     }
 }
 
-public extension CloudObject {
-
-    static func className() -> String {
-        let className = String(validatingUTF8: class_getName(self))!
-
-        if let index = className.firstIndex(of: ".") {
-            let startIndex: String.Index = className.index(after: index)
-            return String(className[startIndex...])
-        } else {
-            return className
-        }
-    }
+public extension SwiftCloudKit {
     
     /// 插入
     /// - Parameters:
     ///   - object: 对象
     ///   - config: 配置器
     ///   - completion: 回调
-    static func insert<T: CloudObject>(object: T,
+    static func insert<T: RecordModel>(object: T,
                                        config: CloudConfig,
                                        completion: @escaping (Result<T, Error>) -> Void){
         
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
+        let database = getDatabase(config.type, identifier: config.identifier)
         
-        let record = object.toRecord()
+        let record = object.ckRecord
         
         database.save(record) { (savedRecord, error) in
             guard let savedRecord = savedRecord else {
@@ -173,14 +200,12 @@ public extension CloudObject {
     ///   - object: 对象
     ///   - config: 配置器
     ///   - completion: 回调
-    static func update<T: CloudObject>(recordID: CKRecord.ID,
-                                       object: T,
+    static func update<T: RecordModel>(object: T,
                                        config: CloudConfig,
                                        completion: @escaping (Result<T, Error>) -> Void){
         
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
-        object.recordID = recordID
-        let modifyOperation = CKModifyRecordsOperation(recordsToSave: [object.toRecord()], recordIDsToDelete: nil)
+        let database = getDatabase(config.type, identifier: config.identifier)
+        let modifyOperation = CKModifyRecordsOperation(recordsToSave: [object.ckRecord], recordIDsToDelete: nil)
         modifyOperation.savePolicy = config.policy
         modifyOperation.qualityOfService = QualityOfService.userInitiated
         modifyOperation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, operationError in
@@ -207,29 +232,23 @@ public extension CloudObject {
     ///   - object: 对象
     ///   - config: 配置器
     ///   - completion: 回调
-    static func delete<T: CloudObject>(object: T,
+    static func delete<T: RecordModel>(object: T,
                                        config: CloudConfig,
                                        completion: @escaping (Bool) -> Void) {
         
-        guard let ID = object.recordID else {
-            return completion(false)
-        }
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
+        let ID = object.ckRecord.recordID
+        let database = getDatabase(config.type, identifier: config.identifier)
         database.delete(withRecordID: ID) { (id, error) in
+            guard let _ = id else {
+                if let _ = error {
+                    return completion(false)
+                }
+                return
+            }
             completion(true)
         }
     }
     
-    func delete(config: CloudConfig, completion: @escaping (Bool) -> Void) {
-        
-        guard let ID = recordID else {
-            return completion(false)
-        }
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
-        database.delete(withRecordID: ID) { (id, error) in
-            completion(true)
-        }
-    }
     //    func delete() {
     //        let db = CKContainer.default().publicCloudDatabase
     //        let predicate = NSPredicate(format: "note = %@", "你好")
@@ -268,11 +287,12 @@ public extension CloudObject {
     ///   - recordID: 对象ID
     ///   - config: 配置器
     ///   - completion: 回调
-    static func fetchOne<T: CloudObject>(recordID: CKRecord.ID,
-                                         config: CloudConfig,
-                                         completion: @escaping (T?) -> Void){
+    static func fetchOne<T: RecordModel>( modelType: T.Type,
+                                          recordID: CKRecord.ID,
+                                          config: CloudConfig,
+                                          completion: @escaping (T?) -> Void){
         
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
+        let database = getDatabase(config.type, identifier: config.identifier)
         database.fetch(withRecordID: recordID) { record, error in
             guard let record = record else {
                 if let _ = error {
@@ -288,10 +308,11 @@ public extension CloudObject {
     /// - Parameters:
     ///   - config: 配置
     ///   - completion: 回调
-    static func fetchAll<T: CloudObject>(config: CloudConfig,
-                                         completion: @escaping (Result<[T], Error>) -> Void){
+    static func fetchAll<T: RecordModel>( modelType: T.Type,
+                                          config: CloudConfig,
+                                          completion: @escaping (Result<[T], Error>) -> Void){
         
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
+        let database = getDatabase(config.type, identifier: config.identifier)
         let query = CKQuery(recordType: T.recordType, predicate: config.predicate)
         
         database.perform(query, inZoneWith: nil) { (records, error) in
@@ -317,11 +338,12 @@ public extension CloudObject {
     ///   - cursor: 上次的请求记录
     ///   - configBlock: 配置器
     ///   - completion: 请求回调
-    static func fetchPageList<T: CloudObject>(cursor: CKQueryOperation.Cursor?,
-                                              config: CloudConfig,
-                                              completion: @escaping (Result<([T], cursor: CKQueryOperation.Cursor?), Error>) -> Void) {
+    static func fetchPageList<T: RecordModel>( modelType: T.Type,
+                                               cursor: CKQueryOperation.Cursor?,
+                                               config: CloudConfig,
+                                               completion: @escaping (Result<([T], cursor: CKQueryOperation.Cursor?), Error>) -> Void) {
         
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
+        let database = getDatabase(config.type, identifier: config.identifier)
         
         var objects: [T] = []
         var operation: CKQueryOperation?
@@ -365,14 +387,14 @@ public extension CloudObject {
     ///   - objects: 对象数组
     ///   - config: 配置器
     ///   - completion: 回调
-    static func insertArray<T: CloudObject>(objects: [T],
+    static func insertArray<T: RecordModel>(objects: [T],
                                             config: CloudConfig,
                                             completion: @escaping (Result<Bool, Error>) -> Void){
         
-        let database = SwiftCloudKit.getDatabase(config.type, identifier: config.identifier)
+        let database = getDatabase(config.type, identifier: config.identifier)
         var recordArray = [CKRecord]()
         objects.forEach { (obj) in
-            recordArray.append(obj.toRecord())
+            recordArray.append(obj.ckRecord)
         }
         
         let modifyOperation = CKModifyRecordsOperation(recordsToSave: recordArray, recordIDsToDelete: nil)
