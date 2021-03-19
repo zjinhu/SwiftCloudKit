@@ -1,7 +1,7 @@
 import Foundation
 import CloudKit
 import UIKit
-
+///Model协议
 public protocol RecordModel{
     
     static var recordType: String { get }
@@ -13,23 +13,23 @@ public protocol RecordModel{
     associatedtype FieldKey : RawRepresentable
 
 }
-
+///使用泛型进行取值赋值
 public extension RecordModel where FieldKey.RawValue == String {
-
+    ///取值,泛型类型
     func getField<T>(_ key: FieldKey) -> T? {
         return useRecord[key.rawValue] as? T
     }
-    
+    ///赋值,泛型类型
     func setField<T>(_ key: FieldKey, value: T?) {
         return useRecord[key.rawValue] = value as? CKRecordValue
     }
     
-    
+    ///获取关联数据
     func getReference(_ key: FieldKey) -> String? {
         let ref: CKRecord.Reference? = getField(key)
         return ref?.recordID.recordName
     }
-    
+    ///关联数据赋值
     func setReference(_ key: FieldKey, referenceIdentifier: String?) {
         let ref = referenceIdentifier.flatMap { (id: String) -> CKRecord.Reference in
             let rid = CKRecord.ID(recordName: id)
@@ -38,12 +38,12 @@ public extension RecordModel where FieldKey.RawValue == String {
         setField(key, value: ref)
     }
     
-    
+    ///图片类型取值
     func getAsset(_ key: FieldKey) -> UIImage? {
         let ref: CKAsset? = getField(key)
         return try? ref?.imageAsset()
     }
-    
+    ///图片类型赋值
     func setAsset(_ key: FieldKey, image: UIImage?) {
         guard let im = image, let asset = try? im.saveToTempLocation(withFileType: .PNG) else {
             return
@@ -51,7 +51,7 @@ public extension RecordModel where FieldKey.RawValue == String {
         setField(key, value: asset)
     }
 }
-
+///存储类型
 public enum DatabaseType {
     case privateDB
     case publicDB
@@ -82,6 +82,8 @@ public struct CloudConfig {
 
 public struct SwiftCloudKit {
     
+    /// 是否已经登录iCloud
+    /// - Parameter callback: 返回true/false
     static func isCloudLogin(_ callback: @escaping (Bool) -> Void){
         CKContainer.default().accountStatus { (status, error) in
             if status == .noAccount{
@@ -119,6 +121,8 @@ public struct SwiftCloudKit {
         }
     }
     
+    /// 查询用户
+    /// - Parameter completion: completion
     static func fetchUserID(completion: @escaping (CKRecord.ID?) -> Void) {
         CKContainer.default().fetchUserRecordID { (id, error) in
             if let validID = id {
@@ -129,6 +133,10 @@ public struct SwiftCloudKit {
         }
     }
     
+    /// 查询用户信息
+    /// - Parameters:
+    ///   - userID: userID
+    ///   - completion: completion
     static func fetchUserInfo(userID: CKRecord.ID,
                               completion: @escaping (CKUserIdentity?) -> Void) {
         
@@ -141,6 +149,11 @@ public struct SwiftCloudKit {
         }
     }
     
+    /// 获取云数据存储
+    /// - Parameters:
+    ///   - type: 数据库类型
+    ///   - identifier: id
+    /// - Returns: 数据
     static func getDatabase(_ type: DatabaseType, identifier: String? = nil) -> CKDatabase{
         
         if let idf = identifier{

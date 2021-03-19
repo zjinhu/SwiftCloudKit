@@ -7,7 +7,7 @@ import AppKit
 import UIKit
 #endif
 
-/// Types of representation of an image
+///图片数据类型转换
 public enum ImageFileType {
     
     case PNG
@@ -32,18 +32,14 @@ public enum ImageConversionError: Int, Error {
     case unableToWriteDataToTemporaryFile
     
     #if os(macOS)
-    
     case unableToLoadTiffRepresentation
     case unableToLoadBitMapRepresentation
-    
     #endif
 }
 
 #if os(macOS)
-
 public extension NSImage {
-    
-    /// PNG representation of this NSImage
+    ///png图片转二进制数据
     func pngData() throws -> Data? {
         
         if let tiff = self.tiffRepresentation {
@@ -59,7 +55,7 @@ public extension NSImage {
             throw ImageConversionError.unableToLoadTiffRepresentation
         }
     }
-    
+    ///jpeg图片转二进制数据
     func jpegData(compressionQuality: CGFloat) throws -> Data? {
         
         if let tiff = self.tiffRepresentation {
@@ -76,6 +72,10 @@ public extension NSImage {
         }
     }
     
+    /// 存储图片二进制到云端并获取URL
+    /// - Parameter fileType: fileType
+    /// - Throws:
+    /// - Returns: 链接
     func saveToTempLocation(withFileType fileType: ImageFileType) throws -> URL {
         
         let imageData: Data?
@@ -111,9 +111,12 @@ public extension NSImage {
 }
 
 #else
-
 public extension UIImage {
     
+    /// 存储图片数据到云端
+    /// - Parameter fileType: fileType
+    /// - Throws:
+    /// - Returns: URL
     func saveToTempLocation(withFileType fileType: ImageFileType) throws -> URL {
         
         let imageData: Data?
@@ -146,5 +149,4 @@ public extension UIImage {
         return url
     }
 }
-
 #endif

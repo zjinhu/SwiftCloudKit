@@ -3,16 +3,14 @@ import CloudKit
 import Foundation
 
 #if os(macOS)
-
 import AppKit
 public typealias CloudAssetImage = NSImage
-
 #else
 import UIKit
 public typealias CloudAssetImage = UIImage
-
 #endif
 
+///图片数据类型转换
 public enum CKAssetError: Error {
     case emptyURL
     case corruptedData
