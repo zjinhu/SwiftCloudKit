@@ -223,7 +223,7 @@ public extension SwiftCloudKit {
         modifyOperation.savePolicy = config.policy
         modifyOperation.qualityOfService = QualityOfService.userInitiated
         modifyOperation.modifyRecordsCompletionBlock = { savedRecords, deletedRecordIDs, operationError in
-            //   the completion block code here
+
             guard let savedRecords = savedRecords,
                   operationError == nil else {
                 if let error = operationError{
