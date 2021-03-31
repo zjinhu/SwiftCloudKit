@@ -1,5 +1,11 @@
 # SwiftCloudKit
 
+[![Version](https://img.shields.io/cocoapods/v/SwiftMediator.svg?style=flat)](http://cocoapods.org/pods/SwiftMediator)
+[![SPM](https://img.shields.io/badge/SPM-supported-DE5C43.svg?style=flat)](https://swift.org/package-manager/)
+![Xcode 11.0+](https://img.shields.io/badge/Xcode-11.0%2B-blue.svg)
+![iOS 11.0+](https://img.shields.io/badge/iOS-11.0%2B-blue.svg)
+![Swift 5.0+](https://img.shields.io/badge/Swift-5.0%2B-orange.svg)
+
 独立开发者都会遇到的问题：就是APP总不能一直本地存数据到数据库吧，得请求接口，云端存数据。要是自己会后端开发，搭建个PHP/Java或者Python的服务，可能会有点时间成本，但好在自己都可以控制。如果实力不济，倒也无妨，可以使用第三方的云数据库，也是简单方便。
 
 经过一段时间的使用Severless云服务，做了个对比：
@@ -16,3 +22,52 @@
 
 我自己写了个APP，使用的LeanCloud的开发者免费服务，小众APP倒也足够API请求3万次每天。后来又写了个APP考虑试试iCloud，毕竟已经交费了嘛，不用就白瞎了，所以就封装了这个，方便快速接入使用。
 
+## 安装
+
+### cocoapods
+
+1.在 Podfile 中添加 `pod ‘SwiftCloudKit’`
+
+2.执行 `pod install 或 pod update`
+
+3.导入 `import SwiftCloudKit`
+
+### Swift Package Manager
+
+从 Xcode 11 开始，集成了 Swift Package Manager，使用起来非常方便。SwiftCloudKit 也支持通过 Swift Package Manager 集成。
+
+在 Xcode 的菜单栏中选择 `File > Swift Packages > Add Pacakage Dependency`，然后在搜索栏输入
+
+`https://github.com/jackiehu/SwiftCloudKit`，即可完成集成
+
+### 手动集成
+
+SwiftCloudKit 也支持手动集成，只需把Sources文件夹中的SwiftCloudKit文件夹拖进需要集成的项目即可
+
+
+
+## 更多砖块工具加速APP开发
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftBrick&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftBrick)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftMediator&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftMediator)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftShow&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftShow)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftLog&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftLog)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftyForm&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftyForm)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftEmptyData&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftEmptyData)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftPageView&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftPageView)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=JHTabBarController&theme=radical&locale=cn)](https://github.com/jackiehu/JHTabBarController)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftMesh&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftMesh)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftNotification&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftNotification)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftButton&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftButton)
+
+[![ReadMe Card](https://github-readme-stats.vercel.app/api/pin/?username=jackiehu&repo=SwiftDatePicker&theme=radical&locale=cn)](https://github.com/jackiehu/SwiftDatePicker)
