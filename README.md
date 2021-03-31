@@ -1,6 +1,6 @@
 # SwiftCloudKit
 
-[![Version](https://img.shields.io/cocoapods/v/SwiftMediator.svg?style=flat)](http://cocoapods.org/pods/SwiftMediator)
+[![Version](https://img.shields.io/cocoapods/v/SwiftCloudKit.svg?style=flat)](http://cocoapods.org/pods/SwiftCloudKit)
 [![SPM](https://img.shields.io/badge/SPM-supported-DE5C43.svg?style=flat)](https://swift.org/package-manager/)
 ![Xcode 11.0+](https://img.shields.io/badge/Xcode-11.0%2B-blue.svg)
 ![iOS 11.0+](https://img.shields.io/badge/iOS-11.0%2B-blue.svg)
